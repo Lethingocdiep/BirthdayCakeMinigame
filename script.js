@@ -1,218 +1,200 @@
-// ====== HỆ THỐNG ÂM THANH ======
+// ====== ÂM THANH ======
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx;
-
-function initAudio() {
-  if (!audioCtx) audioCtx = new AudioContext();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-}
-
-function playTone(freq, type, duration, vol = 0.1) {
-  initAudio();
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-  osc.stop(audioCtx.currentTime + duration);
-}
-
-// Cập nhật thêm tiếng ăn và tiếng cắt bánh
+const playSfx = (f, t, d) => {
+    if(!audioCtx) audioCtx = new AudioContext();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
+    o.connect(g); g.connect(audioCtx.destination); o.start();
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + d); o.stop(audioCtx.currentTime + d);
+};
 const sounds = {
-  mix: () => playTone(300, 'square', 0.1, 0.05),
-  pour: () => playTone(400, 'sine', 0.3, 0.1),
-  bake: () => playTone(150, 'triangle', 0.5, 0.1),
-  sparkle: () => {
-    playTone(800, 'sine', 0.2, 0.1);
-    setTimeout(() => playTone(1200, 'sine', 0.3, 0.1), 100);
-    setTimeout(() => playTone(1600, 'sine', 0.4, 0.1), 200);
-  },
-  blow: () => playTone(100, 'sawtooth', 0.8, 0.1),
-  cut: () => playTone(800, 'sawtooth', 0.1, 0.1),
-  eat: () => playTone(600, 'sine', 0.2, 0.1)
+    mix: () => playSfx(300, 'triangle', 0.2),
+    pour: () => playSfx(400, 'sine', 0.4),
+    bake: () => playSfx(150, 'square', 0.5),
+    sparkle: () => { playSfx(800, 'sine', 0.3); setTimeout(()=>playSfx(1200,'sine',0.3), 100); },
+    eat: () => playSfx(600, 'sine', 0.2)
 };
 
-// ====== DỮ LIỆU CÁC BƯỚC GAME ======
+// ====== DỮ LIỆU GAME ======
 const steps = [
-  { id: "mix", text: "Bước 1: Đánh bột thật đều tay!", main: "tools/bowl.png", items: ["tools/whisk.png"], btn: "Khuấy bột", action: "progress" },
-  { id: "pour", text: "Bước 2: Đổ bột vào khuôn", main: "tools/mold.png", items: ["tools/bowl.png"], btn: "Đổ bột", action: "click" },
-  { id: "bake", text: "Bước 3: Nướng bánh trong lò", main: "oven/oven.png", items: [], btn: "Nướng bánh", action: "progress_auto" },
-  { id: "cream", text: "Bước 4: Làm kem Matcha", main: "tools/bowl_cream.png", items: ["ingredients/matcha.png", "ingredients/cream.png"], btn: "Trộn kem", action: "progress" },
-  { id: "frost", text: "Bước 5: Phết kem lên bánh", main: "cake/bare_cake.png", items: ["tools/spatula.png"], btn: "Phết kem", action: "click" },
-  { id: "decor", text: "Bước 6: Trang trí bánh", main: "cake/frosted.png", items: ["decor/topping.png", "decor/candle.png"], btn: "Trang trí", action: "click" },
-  { id: "blow", text: "Hoàn thành! Hãy thổi nến nào!", main: "cake/full.png", items: [], btn: "Thổi nến 🌬️", action: "blow" },
-  { id: "cut", text: "Cắt một lát bánh nhỏ", main: "cake/full.png", items: ["tools/knife.png"], btn: "Cắt bánh", action: "cut" },
-  { id: "feed", text: "Aaa... Đút cho nhau ăn nào!", main: "cake/slice.png", items: [], btn: "Đút ăn ❤️", action: "feeding" }
+    { text: "Khuấy bột thôi! Kéo 'Whisk' vào tô matcha", tool: "tools/whisk.png", main: "tools/bowl.png", target: "main", nextMain: "mold/empty.png" },
+    { text: "Đổ bột vào khuôn nhé!", tool: "tools/bowl.png", main: "mold/empty.png", target: "main", nextMain: "mold/batter.png" },
+    { text: "Cho vào lò nướng nào!", tool: "mold/batter.png", main: "oven/oven.png", target: "main", special: "bake" },
+    { text: "Phết kem lên bánh nướng", tool: "tools/spatula.png", main: "cake/baked.png", target: "main", nextMain: "cake/frosted.png" },
+    { text: "Trang trí nến thôi!", tool: "decor/candle.png", main: "cake/frosted.png", target: "main", nextMain: "cake/full.png" },
+    { text: "Cầm dao cắt một lát bánh nào", tool: "tools/knife.png", main: "cake/full.png", target: "main", nextMain: "cake/slice.png" },
+    { text: "Tự tay đút cho từng người nhé!", tool: "cake/slice.png", main: "cake/slice.png", target: "chibi" }
 ];
 
 let currentStep = 0;
-let progress = 0;
+let fed = { girl: false, boy: false };
 
-// Các phần tử DOM
-const startBtn = document.getElementById("startBtn");
-const startScreen = document.getElementById("start-screen");
-const gameUI = document.getElementById("game-ui");
-const bg = document.getElementById("bg");
-
-const statusText = document.getElementById("status-text");
-const workspace = document.getElementById("workspace");
-const tray = document.getElementById("tray");
-const actionBtn = document.getElementById("actionBtn");
-const progressContainer = document.getElementById("progress-container");
-const progressBar = document.getElementById("progress-bar");
-
-// Xử lý sự kiện khi bấm nút Start
-startBtn.onclick = () => {
-  initAudio();
-  sounds.sparkle();
-  
-  startScreen.style.display = "none";
-  gameUI.style.display = "flex";
-  bg.classList.add("dimmed");
-  
-  loadStep();
-};
+function initGame() {
+    loadStep();
+}
 
 function loadStep() {
-  progress = 0;
-  const stepData = steps[currentStep];
-  
-  statusText.innerHTML = stepData.text;
-  actionBtn.innerText = stepData.btn;
-  actionBtn.style.display = "inline-block";
-  progressContainer.style.display = "none";
-  progressBar.style.width = "0%";
-  tray.innerHTML = "";
-
-  if (stepData.main) {
-    workspace.innerHTML = `<img src="images/${stepData.main}" style="width:200px; transition: 0.3s;" id="main-item">`;
-  }
-
-  if (stepData.items) {
-    stepData.items.forEach(i => {
-      const img = document.createElement("img");
-      img.src = "images/" + i;
-      tray.appendChild(img);
-    });
-  }
+    const s = steps[currentStep];
+    document.getElementById("status-text").innerText = s.text;
+    const ws = document.getElementById("workspace");
+    ws.innerHTML = `<div id="baking-timer">00:05</div><img src="images/${s.main}" id="main-target" style="width:200px;">`;
+    
+    const tray = document.getElementById("tray");
+    tray.innerHTML = "";
+    
+    // Tạo dụng cụ có thể kéo
+    const tool = document.createElement("img");
+    tool.src = `images/${s.tool}`;
+    tool.classList.add("draggable-tool");
+    tool.onmousedown = onMouseDown;
+    tray.appendChild(tool);
 }
 
-// Xử lý các thao tác trong game
-actionBtn.onclick = () => {
-  const stepData = steps[currentStep];
+// ====== LOGIC KÉO THẢ ======
+function onMouseDown(e) {
+    const tool = e.target;
+    let coords = tool.getBoundingClientRect();
+    let shiftX = e.clientX - coords.left;
+    let shiftY = e.clientY - coords.top;
 
-  if (stepData.action === "progress") {
-    progressContainer.style.display = "block";
-    progress += 20;
-    progressBar.style.width = progress + "%";
-    sounds.mix();
-    if (progress >= 100) setTimeout(nextStep, 500);
+    tool.classList.add("dragging");
+    tool.style.position = 'absolute';
+    document.body.append(tool);
 
-  } else if (stepData.action === "click") {
-    sounds.pour();
-    let mainImg = document.getElementById("main-item");
-    mainImg.style.transform = "scale(1.1) rotate(5deg)";
-    setTimeout(nextStep, 600);
+    moveAt(e.pageX, e.pageY);
 
-  } else if (stepData.action === "progress_auto") {
-    actionBtn.style.display = "none";
-    progressContainer.style.display = "block";
-    
-    let bakeInterval = setInterval(() => {
-      progress += 10;
-      progressBar.style.width = progress + "%";
-      sounds.bake();
-      
-      if (progress >= 100) {
-        clearInterval(bakeInterval);
-        sounds.sparkle();
-        setTimeout(nextStep, 800);
-      }
-    }, 300);
+    function moveAt(pageX, pageY) {
+        tool.style.left = pageX - shiftX + 'px';
+        tool.style.top = pageY - shiftY + 'px';
+    }
 
-  } else if (stepData.action === "blow") {
-    sounds.blow();
-    let mainImg = document.getElementById("main-item");
-    mainImg.style.transform = "scale(1.05)";
-    setTimeout(nextStep, 800);
-    
-  } else if (stepData.action === "cut") {
-    sounds.cut();
-    let mainImg = document.getElementById("main-item");
-    mainImg.src = "images/cake/slice.png"; 
-    setTimeout(nextStep, 800);
-    
-  } else if (stepData.action === "feeding") {
-    runFeeding();
-  }
+    function onMouseMove(e) {
+        moveAt(e.pageX, e.pageY);
+        // Kiểm tra va chạm khi đang di chuyển
+        checkOverlap(tool);
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+
+    tool.onmouseup = function() {
+        document.removeEventListener('mousemove', onMouseMove);
+        tool.onmouseup = null;
+        finalizeDrop(tool);
+    };
 }
 
-function nextStep() {
-  currentStep++;
-  if (currentStep < steps.length) {
-    loadStep();
-  }
+function checkOverlap(tool) {
+    const target = document.getElementById("main-target");
+    const girl = document.getElementById("girl");
+    const boy = document.getElementById("boy");
+    
+    if (isOver(tool, target)) target.classList.add("highlight");
+    else target.classList.remove("highlight");
 }
 
-// Hoạt cảnh đút bánh cho nhau
-function runFeeding() {
-  actionBtn.style.display = "none";
-  const slice = document.createElement("img");
-  slice.src = "images/cake/slice.png";
-  slice.className = "feeding-slice";
-  workspace.appendChild(slice);
+function finalizeDrop(tool) {
+    const s = steps[currentStep];
+    const target = document.getElementById("main-target");
+    const girl = document.getElementById("girl");
+    const boy = document.getElementById("boy");
 
-  // Đút cho Girl (bên trái)
-  setTimeout(() => {
-    slice.style.transform = "translateX(-130px) translateY(60px) rotate(-20deg)";
-    sounds.eat();
-    createHeart(60, 180);
-  }, 500);
+    if (s.target === "main" && isOver(tool, target)) {
+        if (s.special === "bake") {
+            startBaking(tool);
+        } else {
+            successStep(tool);
+        }
+    } else if (s.target === "chibi") {
+        if (isOver(tool, girl) && !fed.girl) { feed(girl, 'girl', tool); }
+        else if (isOver(tool, boy) && !fed.boy) { feed(boy, 'boy', tool); }
+        else { resetTool(tool); }
+    } else {
+        resetTool(tool);
+    }
+}
 
-  // Đút cho Boy (bên phải)
-  setTimeout(() => {
-    slice.style.transform = "translateX(130px) translateY(60px) rotate(20deg)";
-    sounds.eat();
-    createHeart(320, 180);
-  }, 2200);
-
-  // Hiện lời chúc
-  setTimeout(() => {
-    slice.style.opacity = "0";
+function successStep(tool) {
     sounds.sparkle();
-    finalScene();
-  }, 4000);
+    tool.remove();
+    currentStep++;
+    if (currentStep < steps.length) loadStep();
 }
 
-// Tạo hiệu ứng tim bay
+function resetTool(tool) {
+    tool.classList.remove("dragging");
+    document.getElementById("tray").appendChild(tool);
+    tool.style.position = "static";
+}
+
+// ====== CÁC TÍNH NĂNG ĐẶC BIỆT ======
+function startBaking(tool) {
+    tool.remove();
+    const timer = document.getElementById("baking-timer");
+    timer.style.display = "block";
+    let timeLeft = 5;
+    sounds.bake();
+    
+    let interval = setInterval(() => {
+        timeLeft--;
+        timer.innerText = `00:0${timeLeft}`;
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            timer.style.display = "none";
+            steps[currentStep+1].main = "cake/baked.png"; // Bánh đã chín
+            successStep({remove:()=>{}});
+        }
+    }, 1000);
+}
+
+function feed(char, p, tool) {
+    sounds.eat();
+    fed[p] = true;
+    char.classList.add("chibi-talk");
+    createHeart(char.offsetLeft + 50, char.offsetTop);
+    
+    if (fed.girl && fed.boy) {
+        tool.remove();
+        setTimeout(showFinal, 1000);
+    } else {
+        resetTool(tool); // Đút người này xong thì trả bánh về để đút người kia
+    }
+}
+
+function isOver(el1, el2) {
+    let r1 = el1.getBoundingClientRect();
+    let r2 = el2.getBoundingClientRect();
+    return !(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom);
+}
+
 function createHeart(x, y) {
-  const h = document.createElement("img");
-  h.src = "images/effects/heart.png";
-  h.className = "heart-pop";
-  h.style.left = x + "px"; h.style.top = y + "px";
-  workspace.appendChild(h);
-  setTimeout(() => h.remove(), 1500);
+    const h = document.createElement("img");
+    h.src = "images/effects/heart.png";
+    h.style.position = "absolute";
+    h.style.left = x + "px"; h.style.top = y + "px";
+    h.style.width = "40px";
+    h.style.pointerEvents = "none";
+    h.animate([{transform:'translateY(0) opacity(1)'}, {transform:'translateY(-100px) opacity(0)'}], 1500);
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1500);
 }
 
-// Cảnh cuối cùng với lời nhắn nhủ lãng mạn
-function finalScene() {
-  tray.innerHTML = "🎂🎂🎂";
-  progressContainer.style.display = "none";
-  actionBtn.style.display = "none";
-  statusText.innerHTML = "";
-  
-  workspace.innerHTML = `
-    <div class="final-message" style="text-align:center;">
-      <h3 style="margin:0; font-size:22px;">💖 Mong mỗi năm đều được cùng anh</h3>
-      <h3 style="margin:5px 0 15px 0; font-size:22px;">làm bánh và ăn bánh như thế này 🎂</h3>
-      <img src="images/cake/full_nobg.png" onerror="this.src='images/cake/full.png'" style="width:160px; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.1));">
-    </div>
-  `;
-  sounds.sparkle();
-  
-  // Hiệu ứng tim bay liên tục ở màn hình cuối
-  setInterval(() => createHeart(Math.random() * 300 + 20, 200), 1000);
+function showFinal() {
+    document.getElementById("status-text").innerText = "";
+    document.getElementById("workspace").innerHTML = `
+        <div class="final-quote">
+            💖 Mong mỗi năm đều được cùng anh<br>
+            làm bánh và ăn bánh như thế này 🎂<br>
+            <img src="images/cake/full.png" style="width:180px; margin-top:20px;">
+        </div>
+    `;
+    sounds.sparkle();
 }
+
+// Khởi động khi nhấn nút Start ở màn hình Chibi
+document.getElementById("startBtn").onclick = () => {
+    document.getElementById("start-screen").style.display = "none";
+    document.getElementById("game-ui").style.display = "flex";
+    document.getElementById("bg").classList.add("dimmed");
+    initGame();
+};
