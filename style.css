@@ -28,91 +28,65 @@ body {
     z-index: 1;
     transition: opacity 0.8s;
 }
+#bg.dimmed { opacity: 0.2; }
 
-#bg.dimmed { opacity: 0.3; }
-
-/* Nút Start theo phong cách Word Cookies */
-#start-screen {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 100;
-}
-
+/* Nút Start */
+#start-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; }
 #startBtn {
-    position: absolute;
-    bottom: 15%; /* Nằm ở phần dưới ảnh */
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 45px;
-    font-size: 32px;
+    position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%);
+    padding: 12px 45px; font-size: 32px;
     background: linear-gradient(to bottom, #a2e53d, #63bc0e);
-    border: 4px solid #fff;
-    border-radius: 50px;
-    color: white;
-    font-weight: 900;
-    cursor: pointer;
-    box-shadow: 0 8px 0 #3e7a06, 0 15px 25px rgba(0,0,0,0.3);
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    animation: pulse 1.5s infinite;
+    border: 4px solid #fff; border-radius: 50px; color: white; font-weight: 900;
+    cursor: pointer; box-shadow: 0 8px 0 #3e7a06, 0 15px 25px rgba(0,0,0,0.3);
+    display: flex; align-items: center; gap: 15px; animation: pulse 1.5s infinite;
 }
-
-#startBtn:active {
-    transform: translateX(-50%) scale(0.95) translateY(4px);
-    box-shadow: 0 4px 0 #3e7a06;
-}
-
-.heart-emoji {
-    font-size: 28px;
-    animation: beat 0.6s infinite alternate;
-}
-
-@keyframes beat { from { transform: scale(1); } to { transform: scale(1.2); } }
-@keyframes pulse { 0%, 100% { transform: translateX(-50%) scale(1); } 50% { transform: translateX(-50%) scale(1.05); } }
 
 /* UI Game */
 #game-ui {
-    width: 100%; height: 100%;
-    display: flex; flex-direction: column;
+    width: 100%; height: 100%; display: flex; flex-direction: column;
     align-items: center; z-index: 2; position: relative;
 }
 
-#header { font-size: 24px; color: #d81b60; margin: 15px; font-weight: bold; }
-#scene { display: flex; width: 100%; justify-content: space-around; align-items: flex-end; flex: 1; padding: 0 20px; }
-#girl, #boy { width: 150px; transition: transform 0.4s; z-index: 5; }
+#scene { 
+    display: flex; width: 100%; justify-content: center; 
+    align-items: flex-end; gap: 20px; flex: 1; padding: 0 20px; 
+}
 
+#girl, #boy { width: 150px; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+/* Workspace */
+#workspace-container { width: 380px; display: flex; flex-direction: column; align-items: center; }
 #workspace {
-    width: 350px; height: 250px;
-    background: rgba(255,255,255,0.8);
-    border: 3px dashed #ffb6c1;
-    border-radius: 20px;
-    display: flex; justify-content: center; align-items: center;
-    position: relative;
+    width: 100%; height: 260px; background: rgba(255,255,255,0.9);
+    border: 4px dashed #ffb6c1; border-radius: 25px;
+    display: flex; justify-content: center; align-items: center; position: relative;
 }
 
-#tray {
-    width: 100%; height: 100px;
-    background: rgba(255,255,255,0.5);
-    display: flex; justify-content: center; align-items: center; gap: 20px;
+/* Hiệu ứng tương tác */
+.dragging { 
+    pointer-events: none; position: fixed; z-index: 9999;
+    transform: scale(1.1) rotate(5deg); filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
 }
 
-#tray img, .draggable-tool {
-    width: 65px; cursor: grab; transition: transform 0.2s;
+.highlight { transform: scale(1.05); filter: brightness(1.1) drop-shadow(0 0 15px #ffeb3b); }
+
+/* Hiệu ứng nhân vật khi ăn */
+.chibi-eat { transform: scale(1.2) translateY(-15px) !important; filter: saturate(1.5); }
+
+/* Animation khuấy bột */
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    20% { transform: translate(-3px, 0px) rotate(-1deg); }
+    40% { transform: translate(3px, 2px) rotate(1deg); }
+    100% { transform: translate(1px, -1px) rotate(0deg); }
 }
+.mixing { animation: shake 0.2s infinite; }
 
-.dragging { transform: scale(1.2) rotate(5deg); z-index: 1000 !important; cursor: grabbing; position: absolute; }
-.highlight { filter: brightness(1.2) drop-shadow(0 0 10px #ffeb3b); }
-.chibi-talk { transform: scale(1.1) translateY(-10px); filter: drop-shadow(0 0 10px #ffb6c1); }
+#tray { width: 100%; height: 100px; display: flex; justify-content: center; gap: 20px; align-items: center; }
+#tray img { width: 70px; cursor: grab; transition: 0.2s; }
 
-#baking-timer {
-    position: absolute; top: 10px; background: #333; color: #0f0;
-    padding: 5px 10px; border-radius: 5px; font-family: monospace; display: none;
-}
+#status-text { font-weight: bold; color: #d81b60; margin-bottom: 10px; font-size: 18px; text-align: center; }
+#baking-timer { position: absolute; top: 10px; background: #333; color: #0f0; padding: 5px 15px; border-radius: 10px; display: none; font-family: monospace; }
 
-.final-quote {
-    text-align: center; color: #d81b60; font-size: 22px; font-weight: bold;
-    animation: fadeIn 1.5s; line-height: 1.5;
-}
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.final-quote { text-align: center; color: #d81b60; font-size: 20px; font-weight: bold; animation: fadeIn 1s forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
