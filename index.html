@@ -2,25 +2,33 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Let's Make Our Cake ❤️ </title>
+  <title>Let's Make Our Cake ❤️</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="game">
-  <div id="bg"></div>
-
   <div id="header">🍰 Matcha Cake – Chibi Couple</div>
 
   <div id="scene">
-    <img id="girl" src="images/chibi/chibi_girl.png">
-    <div id="workspace"></div>
-    <img id="boy" src="images/chibi/chibi_boy.png">
+    <img id="girl" src="images/chibi/chibi_girl.png" alt="Chibi Girl">
+    
+    <div id="workspace-container">
+      <div id="status-text">Bắt đầu làm bánh thôi nào!</div>
+      <div id="workspace">
+        </div>
+      <div id="progress-container" style="display: none;">
+        <div id="progress-bar"></div>
+      </div>
+    </div>
+
+    <img id="boy" src="images/chibi/chibi_boy.png" alt="Chibi Boy">
   </div>
 
-  <div id="tray"></div>
+  <div id="tray">
+    </div>
 
-  <button id="nextBtn">❤️ Start ❤️</button>
+  <button id="actionBtn">❤️ Start ❤️</button>
 </div>
 
 <script src="script.js"></script>
