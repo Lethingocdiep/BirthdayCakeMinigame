@@ -3,55 +3,168 @@ body {
   margin: 0;
   font-family: "Comic Sans MS", "Segoe UI", sans-serif;
   background: #ffeef4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+#game {
+  width: 800px;
+  max-width: 100%;
+  background: #fff5f8;
+  border-radius: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  position: relative;
+  overflow: hidden; /* Để background không bị tràn ra ngoài góc bo tròn */
+}
+
+/* THÊM PHẦN BACKGROUND */
+#bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('images/chibi/chibi.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.25; /* Làm mờ ảnh nền đi một chút (25%) để không rối mắt */
+  z-index: 0;
+  pointer-events: none; /* Không cản trở các thao tác click chuột */
+}
+
+/* Đảm bảo các thành phần khác nổi lên trên background */
+#header, #scene, #tray, #actionBtn {
+  position: relative;
+  z-index: 1; 
+}
+
+#header {
+  font-size: 24px;
+  font-weight: bold;
+  color: #d81b60;
+  margin-bottom: 20px;
 }
 
 #scene {
-  flex: 1;
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   padding: 0 40px;
+  margin-bottom: 20px;
 }
 
 #girl, #boy {
-  width: 160px;
+  width: 140px;
+  transition: transform 0.3s;
+}
+
+#girl:hover, #boy:hover {
+  transform: scale(1.05);
+}
+
+#workspace-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 380px;
+}
+
+#status-text {
+  font-size: 18px;
+  color: #333;
+  margin-bottom: 10px;
+  font-weight: bold;
+  text-align: center;
+  min-height: 25px;
 }
 
 #workspace {
-  width: 380px;
-  height: 300px;
-  background: rgba(255,255,255,0.8);
+  width: 100%;
+  height: 260px;
+  background: rgba(255,255,255,0.9);
   border-radius: 20px;
-  box-shadow: 0 0 15px rgba(0,0,0,.1);
+  border: 3px dashed #ffb6c1;
+  box-shadow: 0 0 15px rgba(0,0,0,.05);
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: relative;
+}
+
+#progress-container {
+  width: 100%;
+  height: 20px;
+  background: #eee;
+  border-radius: 10px;
+  margin-top: 15px;
+  overflow: hidden;
+}
+
+#progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(45deg, #9be15d, #00e3ae);
+  transition: width 0.2s;
 }
 
 #tray {
-  height: 120px;
+  height: 90px;
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 15px;
+  margin-bottom: 20px;
 }
 
 #tray img {
-  width: 70px;
+  width: 60px;
   cursor: pointer;
   transition: .2s;
+  background: #fff;
+  border-radius: 50%;
+  padding: 5px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-#tray img:hover { transform: scale(1.1); }
+#tray img:hover { 
+  transform: scale(1.1) translateY(-5px); 
+}
 
-#nextBtn {
-  margin-bottom: 15px;
-  padding: 12px 26px;
+#actionBtn {
+  margin-bottom: 10px;
+  padding: 12px 30px;
   font-size: 18px;
-  background: linear-gradient(45deg,#9be15d,#00e3ae);
+  background: linear-gradient(45deg, #ff8a80, #ff5252);
   border: none;
   border-radius: 30px;
   cursor: pointer;
-  color: #044;
+  color: white;
   font-weight: bold;
+  box-shadow: 0 5px 15px rgba(255, 82, 82, 0.4);
+  transition: 0.3s;
+}
+
+#actionBtn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(255, 82, 82, 0.6);
+}
+
+.sparkle-text {
+  color: #e91e63;
+  text-shadow: 0 0 10px #ffb6c1;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
