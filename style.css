@@ -52,26 +52,36 @@ body {
   height: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  /* Thay vì căn giữa, ta đẩy nút xuống cách mép trên 60% chiều cao màn hình */
+  align-items: flex-start; 
+  padding-top: 70%; /* Tăng số này nếu muốn nút thấp xuống nữa */
   z-index: 10;
 }
 
 #startBtn {
-  padding: 20px 50px;
-  font-size: 42px;
-  /* Làm màu xanh lá nổi bật giống ảnh Word Cookies */
+  padding: 15px 45px;
+  font-size: 36px; /* Chỉnh nhỏ lại một chút cho thanh thoát */
   background: linear-gradient(to bottom, #8ee036, #5ab70b);
-  border: 6px solid #fff;
+  border: 5px solid #fff;
   border-radius: 50px;
   cursor: pointer;
   color: white;
   font-weight: bold;
   font-family: "Comic Sans MS", sans-serif;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 -5px 10px rgba(0,0,0,0.2);
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Khoảng cách giữa tim và chữ */
   animation: pulseBtn 1.5s infinite;
 }
 
+/* Hiệu ứng nhịp đập cho nút */
+@keyframes pulseBtn {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
 @keyframes pulseBtn {
   0% { transform: scale(1); }
   50% { transform: scale(1.05); }
@@ -199,4 +209,5 @@ body {
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
 
