@@ -11,19 +11,18 @@ body {
 
 #game {
   width: 800px;
+  height: 550px;
   max-width: 100%;
   background: #fff5f8;
   border-radius: 30px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 20px 0;
   position: relative;
-  overflow: hidden; /* Để background không bị tràn ra ngoài góc bo tròn */
+  overflow: hidden;
 }
 
-/* THÊM PHẦN BACKGROUND */
+/* BACKGROUND CHIBI */
 #bg {
   position: absolute;
   top: 0;
@@ -33,110 +32,78 @@ body {
   background-image: url('images/chibi/chibi.png');
   background-size: cover;
   background-position: center;
-  opacity: 0.25; /* Làm mờ ảnh nền đi một chút (25%) để không rối mắt */
+  opacity: 1; /* Lúc đầu hiện rõ 100% */
   z-index: 0;
-  pointer-events: none; /* Không cản trở các thao tác click chuột */
+  pointer-events: none;
+  transition: opacity 0.8s ease-in-out;
 }
 
-/* Đảm bảo các thành phần khác nổi lên trên background */
-#header, #scene, #tray, #actionBtn {
-  position: relative;
-  z-index: 1; 
+/* Khi vào game sẽ làm mờ đi để không rối mắt */
+#bg.dimmed {
+  opacity: 0.25; 
 }
 
-#header {
-  font-size: 24px;
-  font-weight: bold;
-  color: #d81b60;
-  margin-bottom: 20px;
-}
-
-#scene {
+/* MÀN HÌNH BẮT ĐẦU */
+#start-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding: 0 40px;
-  margin-bottom: 20px;
-}
-
-#girl, #boy {
-  width: 140px;
-  transition: transform 0.3s;
-}
-
-#girl:hover, #boy:hover {
-  transform: scale(1.05);
-}
-
-#workspace-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 380px;
-}
-
-#status-text {
-  font-size: 18px;
-  color: #333;
-  margin-bottom: 10px;
-  font-weight: bold;
-  text-align: center;
-  min-height: 25px;
-}
-
-#workspace {
-  width: 100%;
-  height: 260px;
-  background: rgba(255,255,255,0.9);
-  border-radius: 20px;
-  border: 3px dashed #ffb6c1;
-  box-shadow: 0 0 15px rgba(0,0,0,.05);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-}
-
-#progress-container {
-  width: 100%;
-  height: 20px;
-  background: #eee;
-  border-radius: 10px;
-  margin-top: 15px;
-  overflow: hidden;
-}
-
-#progress-bar {
-  width: 0%;
   height: 100%;
-  background: linear-gradient(45deg, #9be15d, #00e3ae);
-  transition: width 0.2s;
-}
-
-#tray {
-  height: 90px;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
+  z-index: 10;
 }
 
-#tray img {
-  width: 60px;
+#startBtn {
+  padding: 20px 50px;
+  font-size: 42px;
+  /* Làm màu xanh lá nổi bật giống ảnh Word Cookies */
+  background: linear-gradient(to bottom, #8ee036, #5ab70b);
+  border: 6px solid #fff;
+  border-radius: 50px;
   cursor: pointer;
-  transition: .2s;
-  background: #fff;
-  border-radius: 50%;
-  padding: 5px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  color: white;
+  font-weight: bold;
+  font-family: "Comic Sans MS", sans-serif;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3), inset 0 -5px 10px rgba(0,0,0,0.2);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  animation: pulseBtn 1.5s infinite;
 }
 
-#tray img:hover { 
-  transform: scale(1.1) translateY(-5px); 
+@keyframes pulseBtn {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
+
+/* GIAO DIỆN LÀM BÁNH */
+#game-ui {
+  width: 100%;
+  height: 100%;
+  display: flex; /* Sẽ đổi thành flex khi click start */
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  z-index: 1;
+}
+
+#header { font-size: 24px; font-weight: bold; color: #d81b60; margin-bottom: 20px; }
+#scene { width: 100%; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 40px; margin-bottom: 20px; flex: 1; }
+#girl, #boy { width: 140px; transition: transform 0.3s; }
+#girl:hover, #boy:hover { transform: scale(1.05); }
+
+#workspace-container { display: flex; flex-direction: column; align-items: center; width: 380px; }
+#status-text { font-size: 18px; color: #333; margin-bottom: 10px; font-weight: bold; text-align: center; min-height: 25px; }
+#workspace { width: 100%; height: 260px; background: rgba(255,255,255,0.9); border-radius: 20px; border: 3px dashed #ffb6c1; box-shadow: 0 0 15px rgba(0,0,0,.05); display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+
+#progress-container { width: 100%; height: 20px; background: #eee; border-radius: 10px; margin-top: 15px; overflow: hidden; }
+#progress-bar { width: 0%; height: 100%; background: linear-gradient(45deg, #9be15d, #00e3ae); transition: width 0.2s; }
+
+#tray { height: 90px; display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px; }
+#tray img { width: 60px; cursor: pointer; transition: .2s; background: #fff; border-radius: 50%; padding: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+#tray img:hover { transform: scale(1.1) translateY(-5px); }
 
 #actionBtn {
   margin-bottom: 10px;
@@ -151,20 +118,39 @@ body {
   box-shadow: 0 5px 15px rgba(255, 82, 82, 0.4);
   transition: 0.3s;
 }
+#actionBtn:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(255, 82, 82, 0.6); }
 
-#actionBtn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(255, 82, 82, 0.6);
+.sparkle-text { color: #e91e63; text-shadow: 0 0 10px #ffb6c1; animation: pulse 1s infinite; }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+/* ====== HIỆU ỨNG ĐÚT BÁNH & KẾT THÚC ====== */
+.feeding-slice {
+  position: absolute;
+  width: 70px;
+  z-index: 10;
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sparkle-text {
-  color: #e91e63;
-  text-shadow: 0 0 10px #ffb6c1;
-  animation: pulse 1s infinite;
+.heart-pop {
+  position: absolute;
+  width: 40px;
+  pointer-events: none;
+  animation: heartFly 1.5s forwards;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+@keyframes heartFly {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(-120px) scale(1.5); opacity: 0; }
+}
+
+.final-message {
+  color: #d81b60;
+  line-height: 1.6;
+  animation: fadeIn 2s ease-in;
+}
+
+@keyframes fadeIn { 
+  from { opacity: 0; transform: translateY(10px); } 
+  to { opacity: 1; transform: translateY(0); } 
 }
